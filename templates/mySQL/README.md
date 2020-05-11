@@ -1,34 +1,17 @@
-# Azure Database for MySQL
+# Deploy Azure Database for MySQL with VNet
 
-The MySQL platform service follows the traditional model. Users can create a server of various sizes and storage capacity. The databases deployed on the server all use the shared resources, the individual databases can't be scaled separately.
+![Azure Public Test Date](https://azurequickstartsservice.blob.core.windows.net/badges/101-managed-mysql-with-vnet/PublicLastTestDate.svg)
+![Azure Public Test Result](https://azurequickstartsservice.blob.core.windows.net/badges/101-managed-mysql-with-vnet/PublicDeployment.svg)
 
-[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FCloudDirect%2FARMLab%2Fmaster%2Ftemplates%2FmySQL%2Fazuredeploy.json)
+![Azure US Gov Last Test Date](https://azurequickstartsservice.blob.core.windows.net/badges/101-managed-mysql-with-vnet/FairfaxLastTestDate.svg)
+![Azure US Gov Last Test Result](https://azurequickstartsservice.blob.core.windows.net/badges/101-managed-mysql-with-vnet/FairfaxDeployment.svg)
 
-## Azure CLI deployment
+![Best Practice Check](https://azurequickstartsservice.blob.core.windows.net/badges/101-managed-mysql-with-vnet/BestPracticeResult.svg)
+![Cred Scan Check](https://azurequickstartsservice.blob.core.windows.net/badges/101-managed-mysql-with-vnet/CredScanResult.svg)
 
-The `az mysql server` command is used with parameters to manage MySQL servers. The `az mysql db` handles the databases on the servers.
+[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2F101-managed-mysql-with-vnet%2Fazuredeploy.json)  [![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2F101-managed-mysql-with-vnet%2Fazuredeploy.json)
+  
 
-### MySQL server creation
+This template provides a easy way to deploy Azure database for MySQL with VNet Integration.
 
-```bash
-az mysql server create --resource-group <resourceGroupName> --name <serverName> \
---location <location> --admin-user <adminUsername> --admin-password <adminPassword> \
---sku-name <skuName> --version <version>
-```
 
-### Create a database in a MySQL server
-
-```bash
-az mysql db create -g <resourceGroupName> -s <serverName> -n <dbName>
-```
-
-### Add firewall rule to a MySQL server
-
-```bash
-az mysql server firewall-rule create --resource-group <resourceGroupName> --server-name <serverName> \
---name <ruleName> --start-ip-address <startIpAddress> --end-ip-address <endIpAddress>
-```
-
-## Template deployment
-
-The proviced JSON template deploys a MySQL server and a database in the server and opens up an IP range on the firewall of the MySQL server. The name of the MySQL server and database, the IP range, the admin credentials and the size and the version of the server are configurable.

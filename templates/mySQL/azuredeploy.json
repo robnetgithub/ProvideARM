@@ -1,46 +1,63 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "serverName": {
+            "type": "string",
+            "metadata": {
+                "description": "Server Name for Azure database for MySQL"
+            }
+        },
         "administratorLogin": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 16,
             "metadata": {
-                "description": "Admin user name"
+                "description": "Database administrator login name"
             }
         },
         "administratorLoginPassword": {
             "type": "securestring",
+            "minLength": 8,
             "metadata": {
-                "description": "Password of the admin user"
+                "description": "Database administrator password"
             }
         },
-        "serverName": {
-            "type": "string",
-            "minLength": 2,
-            "maxLength": 63,
+        "skuCapacity": {
+            "type": "int",
+            "defaultValue": 2,
             "metadata": {
-                "description": "Name of the MySQL server"
+                "description": "Azure database for MySQL compute capacity in vCores (2,4,8,16,32)"
             }
         },
         "skuName": {
             "type": "string",
-            "allowedValues": [
-                "B_Gen5_1",
-                "B_Gen5_2",
-                "GP_Gen5_2",
-                "GP_Gen5_4",
-                "GP_Gen5_8",
-                "GP_Gen5_16",
-                "GP_Gen5_32"
-            ],
             "defaultValue": "GP_Gen5_2",
             "metadata": {
-                "description": "Size of the MySQL server"
+                "description": "Azure database for MySQL sku name "
             }
         },
-        "sqlServerVersion": {
+        "SkuSizeMB": {
+            "type": "int",
+            "defaultValue": 5120,
+            "metadata": {
+                "description": "Azure database for MySQL Sku Size "
+            }
+        },
+        "SkuTier": {
+            "type": "string",
+            "defaultValue": "GeneralPurpose",
+            "metadata": {
+                "description": "Azure database for MySQL pricing tier"
+            }
+        },
+        "skuFamily": {
+            "type": "string",
+            "defaultValue": "Gen5",
+            "metadata": {
+                "description": "Azure database for MySQL sku family"
+            }
+        },
+        "mysqlVersion": {
             "type": "string",
             "allowedValues": [
                 "5.6",
@@ -48,70 +65,167 @@
             ],
             "defaultValue": "5.7",
             "metadata": {
-                "description": "Version of the MySQL server"
+                "description": "MySQL version"
             }
         },
-        "sqlDatabaseName": {
+        "location": {
             "type": "string",
+            "defaultValue": "[resourceGroup().location]",
             "metadata": {
-                "description": "The name of the database"
+                "description": "Location for all resources."
             }
         },
-        "firewallIPRangeStart": {
-            "type": "string",
+        "backupRetentionDays": {
+            "type": "int",
+            "defaultValue": 7,
             "metadata": {
-                "description": "Start of the allowed IP range"
+                "description": "MySQL Server backup retention days"
             }
         },
-        "firewallIPRangeEnd": {
+        "geoRedundantBackup": {
             "type": "string",
+            "defaultValue": "Disabled",
             "metadata": {
-                "description": "End of the allowed IP range"
+                "description": "Geo-Redundant Backup setting"
+            }
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "defaultValue": "azure_mysql_vnet",
+            "metadata": {
+                "description": "Virtual Network Name"
+            }
+        },
+        "subnetName": {
+            "type": "string",
+            "defaultValue": "azure_mysql_subnet",
+            "metadata": {
+                "description": "Subnet Name"
+            }
+        },
+        "virtualNetworkRuleName": {
+            "type": "string",
+            "defaultValue": "AllowSubnet",
+            "metadata": {
+                "description": "Virtual Network RuleName"
+            }
+        },
+        "vnetAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16",
+            "metadata": {
+                "description": "Virtual Network Address Prefix"
+            }
+        },
+        "subnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16",
+            "metadata": {
+                "description": "Subnet Address Prefix"
             }
         }
     },
-    "variables": {},
+    "variables": {
+        "firewallrules": {
+            "batch": {
+                "rules": [
+                    {
+                        "Name": "rule1",
+                        "StartIpAddress": "0.0.0.0",
+                        "EndIpAddress": "255.255.255.255"
+                    },
+                    {
+                        "Name": "rule2",
+                        "StartIpAddress": "0.0.0.0",
+                        "EndIpAddress": "255.255.255.255"
+                    }
+                ]
+            }
+        }
+    },
     "resources": [
         {
-            "name": "[parameters('serverName')]",
-            "type": "Microsoft.DBforMySQL/servers",
-            "apiVersion": "2017-12-01",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "displayName": "MySQLServer"
-            },
+            "apiVersion": "2018-06-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('virtualNetworkName')]",
+            "location": "[parameters('location')]",
             "properties": {
-                "version": "[parameters('sqlServerVersion')]",
-                "administratorLogin": "[parameters('administratorLogin')]",
-                "administratorLoginPassword": "[parameters('administratorLoginPassword')]"
-            },
-            "sku": {
-                "name": "[parameters('skuName')]"
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('vnetAddressPrefix')]"
+                    ]
+                }
             },
             "resources": [
                 {
-                    "name": "[parameters('sqlDatabaseName')]",
-                    "type": "databases",
-                    "apiVersion": "2017-12-01",
-                    "properties": {},
+                    "apiVersion": "2018-06-01",
+                    "type": "subnets",
+                    "location": "[parameters('location')]",
+                    "name": "[parameters('subnetName')]",
                     "dependsOn": [
-                        "[parameters('serverName')]"
-                    ]
-                },
+                        "[parameters('virtualNetworkName')]"
+                    ],
+                    "properties": {
+                        "addressPrefix": "[parameters('subnetPrefix')]"
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2017-12-01",
+            "type": "Microsoft.DBforMySQL/servers",
+            "location": "[parameters('location')]",
+            "name": "[parameters('serverName')]",
+            "sku": {
+                "name": "[parameters('skuName')]",
+                "tier": "[parameters('skuTier')]",
+                "capacity": "[parameters('skuCapacity')]",
+                "size": "[parameters('skuSizeMB')]",
+                "family": "[parameters('skuFamily')]"
+            },
+            "properties": {
+                "version": "[parameters('mysqlVersion')]",
+                "administratorLogin": "[parameters('administratorLogin')]",
+                "administratorLoginPassword": "[parameters('administratorLoginPassword')]",
+                "storageProfile": {
+                    "storageMB": "[parameters('skuSizeMB')]",
+                    "backupRetentionDays": "[parameters('backupRetentionDays')]",
+                    "geoRedundantBackup": "[parameters('geoRedundantBackup')]"
+                }
+            },
+            "resources": [
                 {
-                    "name": "Allowed IPs",
-                    "type": "firewallRules",
+                    "name": "[parameters('virtualNetworkRuleName')]",
+                    "type": "virtualNetworkRules",
                     "apiVersion": "2017-12-01",
                     "properties": {
-                        "startIpAddress": "[parameters('firewallIPRangeStart')]",
-                        "endIpAddress": "[parameters('firewallIPRangeEnd')]"
+                        "virtualNetworkSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]",
+                        "ignoreMissingVnetServiceEndpoint": true
                     },
                     "dependsOn": [
-                        "[parameters('serverName')]"
+                        "[concat('Microsoft.DBforMySQL/servers/', parameters('serverName'))]"
                     ]
                 }
             ]
+        },
+		{
+            "name": "[concat(parameters('serverName'),'/',variables('firewallrules').batch.rules[copyIndex()].Name)]",
+            "type": "Microsoft.DBforMySQL/servers/firewallRules",
+            "apiVersion": "2017-12-01",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.DBforMySQL/servers/', parameters('serverName'))]"
+            ],
+            "copy": {
+                "name": "firewallRulesCopy",
+                "mode": "Serial",
+                "batchSize": 1,
+                "count": "[length(variables('firewallrules').batch.rules)]"
+            },
+            "properties": {
+                "StartIpAddress": "[variables('firewallrules').batch.rules[copyIndex()].StartIpAddress]",
+                "EndIpAddress": "[variables('firewallrules').batch.rules[copyIndex()].EndIpAddress]"
+            }
         }
-    ],
-    "outputs": {}
+    ]
 }
