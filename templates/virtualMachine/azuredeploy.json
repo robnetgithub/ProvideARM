@@ -93,21 +93,18 @@
         },
         "vnetName": {
             "type": "string",
-            "defaultValue": "core",
             "metadata": {
                 "description": "Name of the virtual network"
             }
         },
         "subnetName": {
             "type": "string",
-            "defaultValue": "inside",
             "metadata": {
                 "description": "Name of the subnet"
             }
         },
         "vnetResourceGroup": {
             "type": "string",
-            "defaultValue": "[resourceGroup().name]",
             "metadata": {
                 "description": "Resource group for the virtual network"
             }
