@@ -1,4 +1,4 @@
-# Deploy a app service plan and a basic Windows web app
+# Deploy an app service plan and a basic Windows web app
 
 ![Azure Public Test Date](https://azurequickstartsservice.blob.core.windows.net/badges/101-webapp-basic-windows/PublicLastTestDate.svg)
 ![Azure Public Test Result](https://azurequickstartsservice.blob.core.windows.net/badges/101-webapp-basic-windows/PublicDeployment.svg)
