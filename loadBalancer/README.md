@@ -1,8 +1,8 @@
 # <Service Name>
 
-This template deploys a <Service Name> to Azure. 
+This template deploys a Standard Load Balancer to Azure. 
 
-[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](URL-TO-azuredeploy.json)
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2F101-load-balancer-standard-create%2Fazuredeploy.json)
 
 
 ## Deploy from Azure CLI
